@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Download, Filter, ChevronUp, ChevronDown, Search, X } from 'lucide-react'
+import { Plus, Download, Filter, ChevronUp, ChevronDown, Search, X, Mail } from 'lucide-react'
 import { Layout } from '../components/layout/Layout'
 import { StageBadge, StrategyBadge } from '../components/ui/Badge'
 import { Avatar } from '../components/ui/Avatar'
@@ -226,6 +226,7 @@ export default function Contacts() {
                 { key: 'checkSize' as SortKey, label: 'Check Size' },
                 { key: 'lastContact' as SortKey, label: 'Last Contact' },
                 ...(viewMode === 'team' ? [{ key: null, label: 'Owner' }] : []),
+                { key: null, label: '' },
               ].map(col => (
                 <th key={col.label}
                   onClick={() => col.key && toggleSort(col.key)}
@@ -279,6 +280,16 @@ export default function Contacts() {
                       {owner && <Avatar initials={owner.initials} color={owner.color} size="xs" name={owner.name} />}
                     </td>
                   )}
+                  <td className="px-3 py-3 w-10">
+                    <a
+                      href={`mailto:${contact.email}`}
+                      onClick={e => e.stopPropagation()}
+                      title={`Email ${contact.firstName}`}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center w-7 h-7 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50"
+                    >
+                      <Mail size={14} />
+                    </a>
+                  </td>
                 </tr>
               )
             })}
