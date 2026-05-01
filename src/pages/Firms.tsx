@@ -13,17 +13,27 @@ export default function Firms() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<FirmType | 'all'>('all')
+  const [cityFilter, setCityFilter] = useState<string>('all')
+  const [stateFilter, setStateFilter] = useState<string>('all')
+  const [countryFilter, setCountryFilter] = useState<string>('all')
   const [view, setView] = useState<'grid' | 'list'>('grid')
+
+  const cities    = [...new Set(allFirms.map(f => f.city))].sort()
+  const states    = [...new Set(allFirms.map(f => f.state))].sort()
+  const countries = [...new Set(allFirms.map(f => f.country))].sort()
 
   const filtered = useMemo(() => {
     let list = allFirms
     if (search) {
       const q = search.toLowerCase()
-      list = list.filter(f => `${f.name} ${f.city} ${f.state}`.toLowerCase().includes(q))
+      list = list.filter(f => `${f.name} ${f.city} ${f.state} ${f.country}`.toLowerCase().includes(q))
     }
     if (typeFilter !== 'all') list = list.filter(f => f.type === typeFilter)
+    if (cityFilter !== 'all') list = list.filter(f => f.city === cityFilter)
+    if (stateFilter !== 'all') list = list.filter(f => f.state === stateFilter)
+    if (countryFilter !== 'all') list = list.filter(f => f.country === countryFilter)
     return list.sort((a, b) => b.aum - a.aum)
-  }, [search, typeFilter])
+  }, [search, typeFilter, cityFilter, stateFilter, countryFilter])
 
   return (
     <Layout title="Firms">
@@ -40,6 +50,24 @@ export default function Firms() {
           className="text-sm border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-indigo-300 bg-white">
           <option value="all">All Types</option>
           {(Object.keys(FIRM_TYPE_LABELS) as FirmType[]).map(t => <option key={t} value={t}>{FIRM_TYPE_LABELS[t]}</option>)}
+        </select>
+
+        <select value={cityFilter} onChange={e => setCityFilter(e.target.value)}
+          className="text-sm border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-indigo-300 bg-white">
+          <option value="all">All Cities</option>
+          {cities.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+
+        <select value={stateFilter} onChange={e => setStateFilter(e.target.value)}
+          className="text-sm border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-indigo-300 bg-white">
+          <option value="all">All States</option>
+          {states.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+
+        <select value={countryFilter} onChange={e => setCountryFilter(e.target.value)}
+          className="text-sm border border-slate-200 rounded-xl px-3 py-2 outline-none focus:border-indigo-300 bg-white">
+          <option value="all">All Countries</option>
+          {countries.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
 
         <div className="ml-auto flex items-center gap-2">

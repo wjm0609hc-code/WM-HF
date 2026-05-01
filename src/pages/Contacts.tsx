@@ -21,6 +21,9 @@ export default function Contacts() {
   const [stageFilter, setStageFilter] = useState<Stage | 'all'>('all')
   const [strategyFilter, setStrategyFilter] = useState<StrategyTag | 'all'>('all')
   const [ownerFilter, setOwnerFilter] = useState<string>('all')
+  const [cityFilter, setCityFilter] = useState<string>('all')
+  const [stateFilter, setStateFilter] = useState<string>('all')
+  const [countryFilter, setCountryFilter] = useState<string>('all')
   const [sortKey, setSortKey] = useState<SortKey>('lastContact')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [showFilters, setShowFilters] = useState(false)
@@ -28,6 +31,13 @@ export default function Contacts() {
   const baseContacts = viewMode === 'personal'
     ? contacts.filter(c => c.ownerId === currentUserId)
     : contacts
+
+  // Derive unique geo values from firms that have contacts in the base set
+  const relevantFirmIds = new Set(baseContacts.map(c => c.firmId))
+  const relevantFirms = firms.filter(f => relevantFirmIds.has(f.id))
+  const cities    = [...new Set(relevantFirms.map(f => f.city))].sort()
+  const states    = [...new Set(relevantFirms.map(f => f.state))].sort()
+  const countries = [...new Set(relevantFirms.map(f => f.country))].sort()
 
   const filtered = useMemo(() => {
     let list = baseContacts
@@ -41,6 +51,15 @@ export default function Contacts() {
     if (stageFilter !== 'all') list = list.filter(c => c.stage === stageFilter)
     if (strategyFilter !== 'all') list = list.filter(c => c.strategyTags.includes(strategyFilter))
     if (ownerFilter !== 'all') list = list.filter(c => c.ownerId === ownerFilter)
+    if (cityFilter !== 'all') {
+      list = list.filter(c => firms.find(f => f.id === c.firmId)?.city === cityFilter)
+    }
+    if (stateFilter !== 'all') {
+      list = list.filter(c => firms.find(f => f.id === c.firmId)?.state === stateFilter)
+    }
+    if (countryFilter !== 'all') {
+      list = list.filter(c => firms.find(f => f.id === c.firmId)?.country === countryFilter)
+    }
 
     return [...list].sort((a, b) => {
       let cmp = 0
@@ -86,7 +105,7 @@ export default function Contacts() {
     exportContactsToCSV(rows)
   }
 
-  const activeFilters = [stageFilter !== 'all', strategyFilter !== 'all', ownerFilter !== 'all'].filter(Boolean).length
+  const activeFilters = [stageFilter !== 'all', strategyFilter !== 'all', ownerFilter !== 'all', cityFilter !== 'all', stateFilter !== 'all', countryFilter !== 'all'].filter(Boolean).length
 
   return (
     <Layout title="Contacts">
@@ -158,9 +177,35 @@ export default function Contacts() {
               </select>
             </div>
           )}
+          <div>
+            <label className="text-xs text-slate-500 font-medium block mb-1">City</label>
+            <select value={cityFilter} onChange={e => setCityFilter(e.target.value)}
+              className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-indigo-300 bg-white">
+              <option value="all">All Cities</option>
+              {cities.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-slate-500 font-medium block mb-1">State</label>
+            <select value={stateFilter} onChange={e => setStateFilter(e.target.value)}
+              className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-indigo-300 bg-white">
+              <option value="all">All States</option>
+              {states.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-slate-500 font-medium block mb-1">Country</label>
+            <select value={countryFilter} onChange={e => setCountryFilter(e.target.value)}
+              className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-indigo-300 bg-white">
+              <option value="all">All Countries</option>
+              {countries.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
           {activeFilters > 0 && (
-            <button onClick={() => { setStageFilter('all'); setStrategyFilter('all'); setOwnerFilter('all') }}
-              className="text-xs text-slate-500 hover:text-red-500 underline mt-4">
+            <button onClick={() => {
+              setStageFilter('all'); setStrategyFilter('all'); setOwnerFilter('all')
+              setCityFilter('all'); setStateFilter('all'); setCountryFilter('all')
+            }} className="text-xs text-slate-500 hover:text-red-500 underline mt-4">
               Clear filters
             </button>
           )}
